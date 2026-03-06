@@ -1,0 +1,34 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./",
+		"outDir": "./dist",
+		"paths": {
+			"@src/*": ["src/*"],
+			"@IoC/*": ["src/IoC/*"],
+			"@infra/*": ["src/infra/*"],
+			"@adapters/*": ["src/infra/adapters/*"],
+			"@domain/*": ["src/domain/*"],
+			"@entities/*": ["src/domain/entities/*"],
+			"@interfaces/*": ["src/domain/interfaces/*"],
+			"@query/*": ["src/domain/interfaces/query/*"],
+			"@statement/*": ["src/domain/interfaces/statement/*"],
+			"@typos/*": ["src/domain/types/*"],
+			"@models/*": ["src/domain/models/*"],
+			"@services/*": ["src/app/services/*"]
+		},
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"target": "ES2022",
+		"types": [],
+		"sourceMap": true,
+		"declaration": true,
+		"declarationMap": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"strict": true,
+		"isolatedModules": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true
+	}
+}

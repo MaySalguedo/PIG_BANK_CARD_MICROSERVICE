@@ -1,0 +1,70 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: PIG_BANK_CARD_MICROSERVICE
+meta:
+  id: wrk_b61aaa3b8e95411f9bcc58d961ad2184
+  created: 1772824124030
+  modified: 1772824124030
+  description: ""
+collection:
+  - name: CARD_MICROSERVICE
+    meta:
+      id: fld_bfa8c76cf2e847d392cec037d2cb19d7
+      created: 1772824140896
+      modified: 1772824140896
+      sortKey: -1772824140896
+      description: ""
+    children:
+      - name: Card
+        meta:
+          id: fld_1fa75c00a34f4ef5ad310225bc30ad73
+          created: 1772824154047
+          modified: 1772824154047
+          sortKey: -1772824154047
+          description: ""
+        children:
+          - url: https://pkbp1rpx96.execute-api.us-east-1.amazonaws.com/prod/card/request
+            name: Create
+            meta:
+              id: req_b7f805dc1c2e4603b7efed5d1aa19724
+              created: 1772824158785
+              modified: 1772824330474
+              isPrivate: false
+              description: ""
+              sortKey: -1772824158786
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"userId": "b31e7bd3-0b03-48be-a720-de1d4ca4a96c",
+                	"request": "CREDIT"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.3.1
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_290ca6a4879353d730b22b94313d981071f29307
+    created: 1772824124038
+    modified: 1772824124038
+environments:
+  name: Base Environment
+  meta:
+    id: env_290ca6a4879353d730b22b94313d981071f29307
+    created: 1772824124034
+    modified: 1772824124034
+    isPrivate: false

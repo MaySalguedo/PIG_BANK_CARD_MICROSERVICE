@@ -1,0 +1,1 @@
+export type TransactionType = "PURCHASE" | "SAVING" | "PAYMENT_BALANCE";
