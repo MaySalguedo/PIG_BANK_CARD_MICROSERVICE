@@ -20,7 +20,7 @@ export class CardService<
 
 	) {}
 
-	public async createCard(userId: string, type: CardType): Promise<void> {
+	public async createCard(userId: string, type: CardType): Promise<Card['uuid']> {
 
 		let status: CardStatus = "PENDING";
 		let balance = 0;
@@ -60,6 +60,9 @@ export class CardService<
 			},
 
 		});
+
+		return newCard.uuid;
+
 	}
 
 	public async activateCard(userId: string, transactionCount: number): Promise<void> {

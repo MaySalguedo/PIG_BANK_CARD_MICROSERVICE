@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "esbuild src/infra/handlers/create-request-card-lambda.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/handler.js --external:@aws-sdk/*"
+    "build": "esbuild src/infra/handlers/*.ts --bundle --platform=node --target=node24 --format=esm --outdir=dist --external:@aws-sdk/*"
   },
   "tsc-alias": {
 	"verbose": false,

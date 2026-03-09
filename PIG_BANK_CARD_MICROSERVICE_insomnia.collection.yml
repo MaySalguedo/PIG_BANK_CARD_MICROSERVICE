@@ -11,7 +11,7 @@ collection:
     meta:
       id: fld_bfa8c76cf2e847d392cec037d2cb19d7
       created: 1772824140896
-      modified: 1772824140896
+      modified: 1773080836748
       sortKey: -1772824140896
       description: ""
     children:
@@ -23,12 +23,12 @@ collection:
           sortKey: -1772824154047
           description: ""
         children:
-          - url: https://pkbp1rpx96.execute-api.us-east-1.amazonaws.com/prod/card/request
+          - url: "{{ _.BASE_URL }}/card/request"
             name: Create
             meta:
               id: req_b7f805dc1c2e4603b7efed5d1aa19724
               created: 1772824158785
-              modified: 1772824330474
+              modified: 1773086393348
               isPrivate: false
               description: ""
               sortKey: -1772824158786
@@ -38,7 +38,7 @@ collection:
               text: |-
                 {
                 	"userId": "b31e7bd3-0b03-48be-a720-de1d4ca4a96c",
-                	"request": "CREDIT"
+                	"request": "DEBIT"
                 }
             headers:
               - name: Content-Type
@@ -55,6 +55,144 @@ collection:
                 send: true
                 store: true
               rebuildPath: true
+          - url: "{{ _.BASE_URL }}/card/activate"
+            name: CardActivate
+            meta:
+              id: req_7740462e3dcc47d8ba16c43a6862eb2e
+              created: 1773084191032
+              modified: 1773084243635
+              isPrivate: false
+              description: ""
+              sortKey: -1772688626902.5
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"userId": "b31e7bd3-0b03-48be-a720-de1d4ca4a96c",
+                	"transactionCount": 12
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.3.1
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Transaction
+        meta:
+          id: fld_5c7b7e8e274141a5bde922c819661810
+          created: 1773084291987
+          modified: 1773084291987
+          sortKey: -1773084291987
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/transactions/purchase"
+            name: Purchase
+            meta:
+              id: req_1e4e9cb84ed4492b87f81af8a8b511f4
+              created: 1773084303580
+              modified: 1773085485836
+              isPrivate: false
+              description: ""
+              sortKey: -1773084303580
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "cardId": "274ab31b-994b-4033-a6ec-84dfa1c60013",
+                  "merchant": "Netflix",
+                  "amount": 15.99
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/card/paid/274ab31b-994b-4033-a6ec-84dfa1c60013"
+            name: Paid
+            meta:
+              id: req_37e660a8a3bb428681ab39dd2c82be51
+              created: 1773085567561
+              modified: 1773086418565
+              isPrivate: false
+              description: ""
+              sortKey: -1773085567561
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"amount": 15
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/transactions/save/58db29e4-4807-48b1-b1ab-20a4df0c9a45"
+            name: Save
+            meta:
+              id: req_8e8851e8b0994297a4d78c02319c2faa
+              created: 1773086457917
+              modified: 1773086517467
+              isPrivate: false
+              description: ""
+              sortKey: -1772954231183
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "merchant": "Automatic Cashier",
+                  "amount": 200
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+    environment:
+      BASE_URL: https://qlwfaz7rt5.execute-api.us-east-1.amazonaws.com/prod
 cookieJar:
   name: Default Jar
   meta:

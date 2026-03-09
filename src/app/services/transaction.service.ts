@@ -22,7 +22,7 @@ export class TransactionService<
 
 	) {}
 
-	public async processPurchase(cardId: string, merchant: string, amount: number): Promise<void> {
+	public async processPurchase(cardId: string, merchant: string, amount: number): Promise<Transaction['uuid']> {
 
 		const card = await this.cardRepository.findOne(cardId);
 		if (!card) throw new Error("Card not found");
@@ -73,5 +73,77 @@ export class TransactionService<
 				amount: transaction.amount,
 			},
 		});
+
+		return transaction.uuid;
+
 	}
+
+	public async payCreditCard(cardId: string, amount: number): Promise<Transaction['uuid']> {
+
+		const card = await this.cardRepository.findOne(cardId);
+		
+		if (!card) throw new Error("Card not found");
+		if (card.status !== "ACTIVATED") throw new Error("Card is not activated");
+		if (card.type !== "CREDIT") throw new Error("Only CREDIT cards can receive balance payments");
+
+		card.balance += amount;
+
+		const transaction: Transaction = {
+			uuid: uuidv4(),
+			cardId,
+			amount,
+			merchant: "CARD PAYMENT",
+			type: "PAYMENT_BALANCE",
+			createdAt: new Date().toISOString(),
+		};
+
+		await this.transactionRepository.save(transaction);
+		
+		await this.cardRepository.updateBalance(cardId, card.balance);
+
+		await this.notificationPort.send({
+			type: "TRANSACTION.PAID",
+			data: {
+				date: transaction.createdAt,
+				amount: amount
+			}
+		});
+
+		return transaction.uuid;
+	}
+
+	public async saveMoney(cardId: string, amount: number, merchant: string): Promise<Transaction['uuid']> {
+
+		const card = await this.cardRepository.findOne(cardId);
+		
+		if (!card) throw new Error("Card not found");
+		if (card.status !== "ACTIVATED") throw new Error("Card is not activated");
+		if (card.type !== "DEBIT") throw new Error("Only DEBIT cards can receive savings/recharge");
+
+		card.balance += amount;
+
+		const transaction: Transaction = {
+			uuid: uuidv4(),
+			cardId,
+			amount,
+			merchant,
+			type: "SAVING", 
+			createdAt: new Date().toISOString(),
+		};
+
+		await this.transactionRepository.save(transaction);
+		
+		await this.cardRepository.updateBalance(cardId, card.balance);
+
+		await this.notificationPort.send({
+			type: "TRANSACTION.SAVE",
+			data: {
+				date: transaction.createdAt,
+				amount: amount
+			}
+		});
+
+		return transaction.uuid;
+	}
+
 }
