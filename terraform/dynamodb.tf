@@ -14,9 +14,9 @@ resource "aws_dynamodb_table" "card_table" {
   }
 
   global_secondary_index {
-    name               = "UserIdIndex"
-    hash_key           = "user_id"
-    projection_type    = "ALL"
+    name            = "UserIdIndex"
+    hash_key        = "user_id"
+    projection_type = "ALL"
   }
 }
 
@@ -28,6 +28,23 @@ resource "aws_dynamodb_table" "transaction_table" {
   attribute {
     name = "uuid"
     type = "S"
+  }
+
+  attribute {
+    name = "cardId"
+    type = "S"
+  }
+
+  attribute {
+    name = "createdAt"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "CardIdCreatedAtIndex"
+    hash_key        = "cardId"
+    range_key       = "createdAt"
+    projection_type = "ALL"
   }
 }
 
