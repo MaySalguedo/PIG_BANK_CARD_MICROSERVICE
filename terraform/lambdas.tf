@@ -1,7 +1,8 @@
-# Variable local para reutilizar configuraciones comunes
 locals {
   lambda_env = {
     AWS_SQS_QUEUE_URL          = aws_sqs_queue.notification_queue.url
+    REPORT_BUCKET_NAME         = aws_s3_bucket.transactions_report_bucket.bucket
+    REPORT_URL_EXPIRES_SECONDS = "3600"
   }
 }
 
@@ -11,7 +12,7 @@ resource "aws_lambda_function" "create_card" {
   handler          = "dist/create-request-card-lambda.handler"
   role             = aws_iam_role.lambda_role.arn
   filename         = var.lambda_zip_path
-  source_code_hash = filebase64sha256(var.lambda_zip_path) # <- ESTO FUERZA LA ACTUALIZACIÓN
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
   environment { variables = local.lambda_env }
 }
 
@@ -49,6 +50,16 @@ resource "aws_lambda_function" "paid_credit" {
   function_name    = "card-paid-credit-lambda"
   runtime          = "nodejs24.x"
   handler          = "dist/card-paid-credit-card-lambda.handler"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = var.lambda_zip_path
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
+  environment { variables = local.lambda_env }
+}
+
+resource "aws_lambda_function" "get_report" {
+  function_name    = "card-get-report-lambda"
+  runtime          = "nodejs24.x"
+  handler          = "dist/card-get-report-lambda.handler"
   role             = aws_iam_role.lambda_role.arn
   filename         = var.lambda_zip_path
   source_code_hash = filebase64sha256(var.lambda_zip_path)
