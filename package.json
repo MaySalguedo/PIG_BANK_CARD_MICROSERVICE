@@ -6,11 +6,17 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "esbuild src/infra/handlers/*.ts --bundle --platform=node --target=node24 --format=esm --outdir=dist --external:@aws-sdk/*"
+    "bundle": "esbuild src/infra/handlers/*.ts --bundle --platform=node --target=node24 --format=esm --outdir=dist --external:@aws-sdk/*",
+    "build": "tar -a -c -f lambda.zip dist package.json",
+	"compile": "run-s bundle build",
+	"tf:init": "terraform init",
+	"tf:apply": "terraform apply -auto-approve",
+	"deploy:init": "run-s compile tf:init tf:apply",
+	"deploy": "run-s compile tf:apply"
   },
   "tsc-alias": {
-	"verbose": false,
-	"resolveFullPaths": true
+    "verbose": false,
+    "resolveFullPaths": true
   },
   "keywords": [],
   "author": "",
@@ -28,6 +34,7 @@
     "@types/node": "^25.3.5",
     "@types/uuid": "^10.0.0",
     "esbuild": "^0.27.3",
+    "npm-run-all": "^4.1.5",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3"
   }

@@ -63,7 +63,7 @@ src/
 
 <ul>
 
-<li><strong>Node.js</strong> 20+</li>
+<li><strong>Node.js</strong> 24+</li>
 <li><strong>AWS CLI</strong> configured with appropriate permissions.</li>
 <li><strong>Terraform</strong v1.5.0+ for infrastructure provisioning.></li>
 
@@ -78,7 +78,7 @@ src/
 <strong>Clone the repository</strong>
 
 ```bash
-git clone [https://github.com/MaySalguedo/PIG_BANK_CARD_MICROSERVICE.git](https://github.com/MaySalguedo/PIG_BANK_CARD_MICROSERVICE.git)
+git clone https://github.com/MaySalguedo/PIG_BANK_CARD_MICROSERVICE.git
 cd PIG_BANK_CARD_MICROSERVICE
 npm install
 ```
@@ -90,8 +90,9 @@ npm install
 <strong>Compile the project</strong>
 
 ```bash
-# Compiles TypeScript and resolves Path Aliases (@services, @adapters, etc.)
-npm run build
+# Bundles TypeScript files and resolves Path Aliases (@services, @adapters, etc.)
+# Builds the lambda.zip for terraform
+npm run compile
 ```
 
 </li>
@@ -101,8 +102,14 @@ npm run build
 <strong>Deploy Infrastructure</strong>
 
 ```bash
-tar -a -c -f lambda.zip dist package.json
 terraform apply
+```
+
+Or you can also **compile**, **init** _(Optional)_ and **deploy** with the following command
+
+```bash
+# use deploy:init to init terraform as well
+npm run deploy
 ```
 
 </li>
@@ -122,10 +129,7 @@ terraform apply
 
 ## Environment Configuration
 
-```env
-# AWS Configuration
-AWS_SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/your-account/notification-queue
-```
+ALL env configs are handled by terraform
 
 ## 📡 API Endpoints
 
