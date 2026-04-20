@@ -26,6 +26,16 @@ resource "aws_lambda_function" "activate_card" {
   environment { variables = local.lambda_env }
 }
 
+resource "aws_lambda_function" "find_card" {
+  function_name    = "find-card-lambda"
+  runtime          = "nodejs24.x"
+  handler          = "dist/find-card-lambda.handler"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = var.lambda_zip_path
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
+  environment { variables = local.lambda_env }
+}
+
 resource "aws_lambda_function" "purchase_card" {
   function_name    = "card-purchase-lambda"
   runtime          = "nodejs24.x"

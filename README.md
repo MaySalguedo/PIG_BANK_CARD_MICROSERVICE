@@ -152,17 +152,6 @@ Creates a card request (debit or credit).
 }
 ```
 
-<p><strong>Response:</strong></p>
-
-```json
-{
-  "cardId": "uuid",
-  "status": "PENDING",
-  "type": "DEBIT | CREDIT",
-  "message": "Card request created successfully"
-}
-```
-
 </li>
 
 <li>
@@ -182,15 +171,15 @@ Activates a card based on business rules (e.g., transaction count).
 }
 ```
 
-<p><strong>Response:</strong></p>
+</li>
 
-```json
-{
-  "cardId": "uuid",
-  "status": "ACTIVE",
-  "message": "Card activated successfully"
-}
-```
+<li>
+
+<h3>🃏 Card Details</h3>
+
+<strong>GET</strong> <code>/card/details/{cardId}</code>
+
+View the details of a card
 
 </li>
 
@@ -209,18 +198,6 @@ Performs a purchase using the card.
   "cardId": "uuid",
   "merchant": "string",
   "amount": number
-}
-```
-
-<p><strong>Response:</strong></p>
-
-```json
-{
-  "transactionId": "uuid",
-  "status": "APPROVED",
-  "amount": number,
-  "merchant": "string",
-  "remainingBalance": number
 }
 ```
 
@@ -248,17 +225,6 @@ Pays a card balance.
 }
 ```
 
-<p><strong>Response:</strong></p>
-
-```json
-{
-  "cardId": "uuid",
-  "paidAmount": number,
-  "remainingDebt": number,
-  "message": "Payment applied successfully"
-}
-```
-
 </li>
 
 <li>
@@ -281,18 +247,6 @@ Saves money into the piggy bank.
 {
   "merchant": "string",
   "amount": number
-}
-```
-
-<p><strong>Response:</strong></p>
-
-```json
-{
-  "transactionId": "uuid",
-  "type": "SAVE",
-  "amount": number,
-  "newSavingsBalance": number,
-  "message": "Amount saved successfully"
 }
 ```
 

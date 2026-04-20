@@ -12,7 +12,7 @@
 	"tf:init": "terraform init",
 	"tf:apply": "terraform apply -auto-approve",
 	"deploy:init": "run-s compile tf:init tf:apply",
-	"deploy": "run-s compile tf:apply"
+	"deploy": "run-s clean compile tf:apply"
   },
   "tsc-alias": {
     "verbose": false,

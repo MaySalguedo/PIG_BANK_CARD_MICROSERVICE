@@ -20,6 +20,12 @@ export class CardService<
 
 	) {}
 
+	public async findCard(uuid: string): Promise<Card | undefined>{
+
+		return await this.cardRepository.findOne(uuid);
+
+	}
+
 	public async createCard(userId: string, type: CardType): Promise<Card['uuid']> {
 
 		let status: CardStatus = "PENDING";

@@ -28,27 +28,13 @@ export class TransactionService<
 		if (!card) throw new Error("Card not found");
 		if (card.status !== "ACTIVATED") throw new Error("Card is not activated");
 
-		if (card.type === "DEBIT") {
+		if (card.balance < amount) {
 
-			if (card.balance < amount) {
-
-				throw new Error("Insufficient funds in debit card");
-
-			}
-
-			card.balance -= amount;
-
-		} else if (card.type === "CREDIT") {
-
-			if (card.balance < amount) {
-
-				throw new Error("Transaction exceeds credit card limit");
-
-			}
-
-			card.balance -= amount; 
+			throw new Error(card.type === "DEBIT" ? "Insufficient funds in debit card" : "Transaction exceeds credit card limit");
 
 		}
+
+		card.balance -= amount;
 
 		const transaction: Transaction = {
 

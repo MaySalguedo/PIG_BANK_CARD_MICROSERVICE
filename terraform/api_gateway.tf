@@ -20,6 +20,60 @@ resource "aws_api_gateway_resource" "card_request" {
   path_part   = "request"
 }
 
+resource "aws_api_gateway_resource" "card_details_prefix" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.card.id
+  path_part   = "details"
+}
+
+resource "aws_api_gateway_resource" "card_uuid" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.card_details_prefix.id
+  path_part   = "{uuid}"
+}
+
+resource "aws_api_gateway_resource" "card_activate" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.card.id
+  path_part   = "activate"
+}
+
+resource "aws_api_gateway_resource" "card_paid" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.card.id
+  path_part   = "paid"
+}
+
+resource "aws_api_gateway_resource" "card_paid_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.card_paid.id
+  path_part   = "{card_id}"
+}
+
+resource "aws_api_gateway_resource" "card_report_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.card.id
+  path_part   = "{card_id}"
+}
+
+# GET /card/details/{uuid} (Nueva Lambda)
+resource "aws_api_gateway_method" "get_card" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.card_uuid.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "int_find_card" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.card_uuid.id
+  http_method             = aws_api_gateway_method.get_card.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.find_card.invoke_arn
+}
+
+# POST /card/request
 resource "aws_api_gateway_method" "post_request" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   resource_id   = aws_api_gateway_resource.card_request.id
@@ -36,12 +90,7 @@ resource "aws_api_gateway_integration" "int_request" {
   uri                     = aws_lambda_function.create_card.invoke_arn
 }
 
-resource "aws_api_gateway_resource" "card_activate" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_resource.card.id
-  path_part   = "activate"
-}
-
+# POST /card/activate
 resource "aws_api_gateway_method" "post_activate" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   resource_id   = aws_api_gateway_resource.card_activate.id
@@ -58,18 +107,7 @@ resource "aws_api_gateway_integration" "int_activate" {
   uri                     = aws_lambda_function.activate_card.invoke_arn
 }
 
-resource "aws_api_gateway_resource" "card_paid" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_resource.card.id
-  path_part   = "paid"
-}
-
-resource "aws_api_gateway_resource" "card_paid_id" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_resource.card_paid.id
-  path_part   = "{card_id}"
-}
-
+# POST /card/paid/{card_id}
 resource "aws_api_gateway_method" "post_paid" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   resource_id   = aws_api_gateway_resource.card_paid_id.id
@@ -86,12 +124,7 @@ resource "aws_api_gateway_integration" "int_paid" {
   uri                     = aws_lambda_function.paid_credit.invoke_arn
 }
 
-resource "aws_api_gateway_resource" "card_report_id" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_resource.card.id
-  path_part   = "{card_id}"
-}
-
+# GET /card/{card_id} (Reporte)
 resource "aws_api_gateway_method" "get_report" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   resource_id   = aws_api_gateway_resource.card_report_id.id
@@ -107,6 +140,8 @@ resource "aws_api_gateway_integration" "int_report" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.get_report.invoke_arn
 }
+
+# --- TRANSACCIONES ---
 
 resource "aws_api_gateway_resource" "tx_purchase" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -166,6 +201,7 @@ resource "aws_lambda_permission" "apigw" {
     save     = aws_lambda_function.save_transaction.function_name
     paid     = aws_lambda_function.paid_credit.function_name
     report   = aws_lambda_function.get_report.function_name
+    find     = aws_lambda_function.find_card.function_name
   }
 
   statement_id  = "AllowExecutionFromAPIGateway_${each.key}"
@@ -183,6 +219,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     aws_api_gateway_integration.int_report,
     aws_api_gateway_integration.int_purchase,
     aws_api_gateway_integration.int_save,
+    aws_api_gateway_integration.int_find_card,
   ]
 
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -200,6 +237,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
         aws_api_gateway_resource.tx_purchase.id,
         aws_api_gateway_resource.tx_save.id,
         aws_api_gateway_resource.tx_save_id.id,
+        aws_api_gateway_resource.card_details_prefix.id,
+        aws_api_gateway_resource.card_uuid.id,
       ]
       methods = [
         aws_api_gateway_method.post_request.id,
@@ -208,6 +247,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
         aws_api_gateway_method.get_report.id,
         aws_api_gateway_method.post_purchase.id,
         aws_api_gateway_method.post_save.id,
+        aws_api_gateway_method.get_card.id,
       ]
       integrations = [
         aws_api_gateway_integration.int_request.id,
@@ -216,6 +256,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
         aws_api_gateway_integration.int_report.id,
         aws_api_gateway_integration.int_purchase.id,
         aws_api_gateway_integration.int_save.id,
+        aws_api_gateway_integration.int_find_card.id,
       ]
     }))
   }
