@@ -8,6 +8,12 @@ resource "aws_api_gateway_resource" "card" {
   path_part   = "card"
 }
 
+resource "aws_api_gateway_resource" "cards" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "cards"
+}
+
 resource "aws_api_gateway_resource" "transactions" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
@@ -34,6 +40,28 @@ resource "aws_api_gateway_integration" "int_request" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.create_card.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "cards_user" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.cards.id
+  path_part   = "{user_id}"
+}
+
+resource "aws_api_gateway_method" "get_cards_by_user" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.cards_user.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "int_cards_by_user" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.cards_user.id
+  http_method             = aws_api_gateway_method.get_cards_by_user.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.list_cards_by_user.invoke_arn
 }
 
 resource "aws_api_gateway_resource" "card_activate" {
@@ -158,6 +186,70 @@ resource "aws_api_gateway_integration" "int_save" {
   uri                     = aws_lambda_function.save_transaction.invoke_arn
 }
 
+locals {
+  cors_resources = {
+  card_request = aws_api_gateway_resource.card_request.id
+  cards_user   = aws_api_gateway_resource.cards_user.id
+  card_paid_id = aws_api_gateway_resource.card_paid_id.id
+  tx_purchase  = aws_api_gateway_resource.tx_purchase.id
+  tx_save_id   = aws_api_gateway_resource.tx_save_id.id
+}
+}
+
+resource "aws_api_gateway_method" "cors_options" {
+  for_each = local.cors_resources
+
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = each.value
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "cors_options" {
+  for_each = local.cors_resources
+
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.cors_options[each.key].http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "cors_options" {
+  for_each = local.cors_resources
+
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.cors_options[each.key].http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "cors_options" {
+  for_each = local.cors_resources
+
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.cors_options[each.key].http_method
+  status_code = aws_api_gateway_method_response.cors_options[each.key].status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_integration.cors_options]
+}
+
 resource "aws_lambda_permission" "apigw" {
   for_each = {
     create   = aws_lambda_function.create_card.function_name
@@ -166,6 +258,7 @@ resource "aws_lambda_permission" "apigw" {
     save     = aws_lambda_function.save_transaction.function_name
     paid     = aws_lambda_function.paid_credit.function_name
     report   = aws_lambda_function.get_report.function_name
+    list     = aws_lambda_function.list_cards_by_user.function_name
   }
 
   statement_id  = "AllowExecutionFromAPIGateway_${each.key}"
@@ -183,6 +276,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     aws_api_gateway_integration.int_report,
     aws_api_gateway_integration.int_purchase,
     aws_api_gateway_integration.int_save,
+    aws_api_gateway_integration.int_cards_by_user,
+    aws_api_gateway_integration_response.cors_options,
   ]
 
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -191,6 +286,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     redeployment = sha1(jsonencode({
       resources = [
         aws_api_gateway_resource.card.id,
+        aws_api_gateway_resource.cards.id,
+        aws_api_gateway_resource.cards_user.id,
         aws_api_gateway_resource.transactions.id,
         aws_api_gateway_resource.card_request.id,
         aws_api_gateway_resource.card_activate.id,
@@ -206,16 +303,20 @@ resource "aws_api_gateway_deployment" "api_deployment" {
         aws_api_gateway_method.post_activate.id,
         aws_api_gateway_method.post_paid.id,
         aws_api_gateway_method.get_report.id,
+        aws_api_gateway_method.get_cards_by_user.id,
         aws_api_gateway_method.post_purchase.id,
         aws_api_gateway_method.post_save.id,
+        aws_api_gateway_method.cors_options,
       ]
       integrations = [
         aws_api_gateway_integration.int_request.id,
         aws_api_gateway_integration.int_activate.id,
         aws_api_gateway_integration.int_paid.id,
         aws_api_gateway_integration.int_report.id,
+        aws_api_gateway_integration.int_cards_by_user.id,
         aws_api_gateway_integration.int_purchase.id,
         aws_api_gateway_integration.int_save.id,
+        aws_api_gateway_integration.cors_options,
       ]
     }))
   }

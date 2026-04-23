@@ -65,3 +65,13 @@ resource "aws_lambda_function" "get_report" {
   source_code_hash = filebase64sha256(var.lambda_zip_path)
   environment { variables = local.lambda_env }
 }
+
+resource "aws_lambda_function" "list_cards_by_user" {
+  function_name    = "card-list-by-user-lambda"
+  runtime          = "nodejs24.x"
+  handler          = "dist/card-list-by-user-lambda.handler"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = var.lambda_zip_path
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
+  environment { variables = local.lambda_env }
+}
