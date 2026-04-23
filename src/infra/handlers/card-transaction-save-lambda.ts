@@ -3,6 +3,7 @@ import { DynamoDbCardAdapter } from "@adapters/dynamo-db-card.adapter";
 import { DynamoDbTransactionAdapter } from "@adapters/dynamo-db-transaction.adapter";
 import { SqsNotificationAdapter } from "@adapters/sqs-notification.adapter";
 import { TransactionService } from "@services/transaction.service";
+import { corsHeaders } from "@infra/http/cors";
 
 const cardRepository = new DynamoDbCardAdapter();
 const transactionRepository = new DynamoDbTransactionAdapter();
@@ -14,12 +15,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 	try {
 		const cardId = event.pathParameters?.card_id;
 		const body = JSON.parse(event.body || "{}");
-		const { merchant, amount } = body;
+		const { amount } = body;
+		const merchant = body.merchant || "PIG_BANK_DEPOSIT";
 
-		if (!cardId || !merchant || typeof amount !== 'number' || amount <= 0) {
+		if (!cardId || typeof amount !== 'number' || amount <= 0) {
 			return {
 				statusCode: 400,
-				body: JSON.stringify({ message: "card_id, merchant and amount are required" })
+				headers: corsHeaders,
+				body: JSON.stringify({ message: "card_id and amount are required" })
 			};
 		}
 
@@ -27,12 +30,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
 		return {
 			statusCode: 201,
+			headers: corsHeaders,
 			body: JSON.stringify({ message: "New balance added successfully" })
 		};
 	} catch (error: any) {
 		console.error("Error while addind balance:", error);
 		return {
 			statusCode: error.message.includes("DEBIT") ? 400 : 500,
+			headers: corsHeaders,
 			body: JSON.stringify({ error: error.message || "Internal Server Error" })
 		};
 	}

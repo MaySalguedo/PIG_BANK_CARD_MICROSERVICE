@@ -3,6 +3,7 @@ import { DynamoDbCardAdapter } from "@adapters/dynamo-db-card.adapter";
 import { SqsNotificationAdapter } from "@adapters/sqs-notification.adapter";
 import { CardService } from "@services/card.service";
 import { CardType } from '@typos/card-type.type';
+import { corsHeaders } from "@infra/http/cors";
 
 const cardRepository = new DynamoDbCardAdapter();
 const notificationAdapter = new SqsNotificationAdapter();
@@ -20,6 +21,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 			console.error("Payload inválido", body);
 			return {
 				statusCode: 400,
+				headers: corsHeaders,
 				body: JSON.stringify({ message: "userId & request are required fields" })
 			};
 		}
@@ -32,6 +34,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
 		return {
 			statusCode: 201,
+			headers: corsHeaders,
 			body: JSON.stringify({ 
 				card_uuid: uuid
 			})
@@ -41,6 +44,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 		console.error("Error while processing card request:", error);
 		return {
 			statusCode: 500,
+			headers: corsHeaders,
 			body: JSON.stringify({ error: error.message || "Internal Server Error" })
 		};
 	}

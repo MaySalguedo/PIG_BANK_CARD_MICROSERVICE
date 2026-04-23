@@ -3,6 +3,7 @@ import { DynamoDbCardAdapter } from "@adapters/dynamo-db-card.adapter";
 import { DynamoDbTransactionAdapter } from "@adapters/dynamo-db-transaction.adapter";
 import { SqsNotificationAdapter } from "@adapters/sqs-notification.adapter";
 import { TransactionService } from "@services/transaction.service";
+import { corsHeaders } from "@infra/http/cors";
 
 const cardRepository = new DynamoDbCardAdapter();
 const transactionRepository = new DynamoDbTransactionAdapter();
@@ -19,6 +20,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 		if (!cardId || typeof amount !== 'number' || amount <= 0) {
 			return {
 				statusCode: 400,
+				headers: corsHeaders,
 				body: JSON.stringify({ message: "card_id and amount are required" })
 			};
 		}
@@ -27,12 +29,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
 		return {
 			statusCode: 201,
+			headers: corsHeaders,
 			body: JSON.stringify({ message: "Credit card payment recieved succesfully" })
 		};
 	} catch (error: any) {
 		console.error("Payment Error:", error);
 		return {
-			statusCode: 500,
+			statusCode: error.message.includes("CREDIT") ? 400 : 500,
+			headers: corsHeaders,
 			body: JSON.stringify({ error: error.message || "Internal Server Error" })
 		};
 	}

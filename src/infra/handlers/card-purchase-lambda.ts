@@ -3,6 +3,7 @@ import { DynamoDbCardAdapter } from "@adapters/dynamo-db-card.adapter";
 import { DynamoDbTransactionAdapter } from "@adapters/dynamo-db-transaction.adapter";
 import { SqsNotificationAdapter } from "@adapters/sqs-notification.adapter";
 import { TransactionService } from "@services/transaction.service";
+import { corsHeaders } from "@infra/http/cors";
 
 const cardRepository = new DynamoDbCardAdapter();
 const transactionRepository = new DynamoDbTransactionAdapter();
@@ -22,6 +23,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 		if (!cardId || !merchant || typeof amount !== 'number' || amount <= 0) {
 			return {
 				statusCode: 400,
+				headers: corsHeaders,
 				body: JSON.stringify({ message: "cardId, merchant and amount (> 0) are required" })
 			};
 		}
@@ -30,6 +32,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
 		return {
 			statusCode: 201,
+			headers: corsHeaders,
 			body: JSON.stringify({ transaction_uuid: uuid })
 		};
 	} catch (error: any) {
@@ -39,6 +42,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 		
 		return {
 			statusCode: isBusinessError ? 400 : 500,
+			headers: corsHeaders,
 			body: JSON.stringify({ error: error.message || "Error interno del servidor" })
 		};
 	}
